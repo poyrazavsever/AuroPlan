@@ -3,10 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
+import { useState } from "react";
 
-// Menü Yapısı
+// Tip Tanımları
+type Team = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type SidebarProps = {
+  teams: Team[];
+  userEmail?: string;
+};
+
+// ... (menuGroups ve bottomItems dizileri aynı kalacak, buraya tekrar yazmıyorum yer kaplamasın diye) ...
 const menuGroups = [
+  // ... mevcut menuGroups içeriği ...
   {
     title: "Genel",
     items: [
@@ -19,7 +32,7 @@ const menuGroups = [
         title: "Gelen Kutusu",
         path: "/dashboard/inbox",
         icon: "heroicons:inbox",
-        badge: "3", // Bildirim sayısı
+        badge: "3",
         badgeColor: "bg-blue-600 text-white",
       },
       {
@@ -53,7 +66,7 @@ const menuGroups = [
         title: "Raporlar",
         path: "/dashboard/reports",
         icon: "heroicons:chart-bar-square",
-        isPro: true, // Pro özellik ikonu için
+        isPro: true,
       },
     ],
   },
@@ -87,26 +100,73 @@ const bottomItems = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ teams, userEmail }: SidebarProps) {
   const pathname = usePathname();
+  const [isTeamMenuOpen, setIsTeamMenuOpen] = useState(false);
+
+  // Şimdilik ilk takımı veya varsayılanı seçili gibi gösterelim
+  // İleride bunu URL'den veya Context'ten alacağız
+  const activeTeam = teams[0] || {
+    name: "Kişisel Alan",
+    id: "personal",
+    slug: "personal",
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 z-40 hidden md:flex flex-col">
-      {/* --- WORKSPACE HEADER --- */}
-      <div className="h-16 flex items-center px-4 border-b border-slate-100">
-        {/* Takım Değiştirici Görünümü */}
-        <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors text-left group">
-          <div className="relative w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-sm group-hover:shadow-md transition-all">
-            <span className="font-bold text-sm">AP</span>
+      {/* --- WORKSPACE HEADER (Takım Seçici) --- */}
+      <div className="h-16 flex items-center px-4 border-b border-slate-100 relative">
+        <button
+          onClick={() => setIsTeamMenuOpen(!isTeamMenuOpen)}
+          className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors text-left group"
+        >
+          <div className="relative w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm shadow-blue-600/20">
+            <span className="font-bold text-sm">
+              {activeTeam.name.substring(0, 2).toUpperCase()}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-900 truncate">
-              Aura Plan Team
+              {activeTeam.name}
             </p>
-            <p className="text-[10px] text-slate-500 truncate">Ücretsiz Plan</p>
+            <p className="text-[10px] text-slate-500 truncate">
+              {teams.length > 0 ? "Ücretsiz Plan" : "Takım Yok"}
+            </p>
           </div>
           <Icon icon="heroicons:chevron-up-down" className="text-slate-400" />
         </button>
+
+        {/* Takım Dropdown Menüsü */}
+        {isTeamMenuOpen && (
+          <div className="absolute top-14 left-2 right-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-1 animate-in fade-in zoom-in-95 duration-100">
+            <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Takımlarım
+            </div>
+            {teams.map((team) => (
+              <button
+                key={team.id}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors text-left"
+              >
+                <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
+                  {team.name.substring(0, 2).toUpperCase()}
+                </div>
+                <span className="truncate flex-1">{team.name}</span>
+                {team.id === activeTeam.id && (
+                  <Icon icon="heroicons:check" className="text-blue-600" />
+                )}
+              </button>
+            ))}
+            <div className="h-px bg-slate-100 my-1"></div>
+            <Link
+              href="/dashboard/teams/create"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              onClick={() => setIsTeamMenuOpen(false)}
+            >
+              <Icon icon="heroicons:plus-circle" />
+              Yeni Takım Oluştur
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* --- SCROLLABLE MENU --- */}
@@ -119,7 +179,6 @@ export default function Sidebar() {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 const isActive = pathname === item.path;
-
                 return (
                   <Link
                     key={item.path}
@@ -144,8 +203,6 @@ export default function Sidebar() {
                       />
                       <span>{item.title}</span>
                     </div>
-
-                    {/* Rozetler ve İkonlar */}
                     <div className="flex items-center gap-2">
                       {item.isPro && (
                         <Icon
@@ -153,7 +210,6 @@ export default function Sidebar() {
                           className="text-xs text-slate-300"
                         />
                       )}
-
                       {item.badge && (
                         <span
                           className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold min-w-[20px] text-center ${
@@ -187,11 +243,10 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {/* Kullanıcı Mini Profil (Logout alternatifi olarak) */}
         <div className="mt-4 pt-4 border-t border-slate-200/60 flex items-center gap-3 px-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-          <span className="text-xs font-medium text-slate-500">
-            Sistemler Çalışıyor
+          <span className="text-xs font-medium text-slate-500 truncate max-w-[140px]">
+            {userEmail || "Kullanıcı"}
           </span>
         </div>
       </div>
