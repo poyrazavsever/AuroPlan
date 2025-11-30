@@ -96,9 +96,10 @@ export default function UploadForm({ teams }: { teams: Team[] }) {
             <select
               name="teamId"
               required
+              defaultValue=""
               className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all appearance-none"
             >
-              <option value="" disabled selected>
+              <option value="" disabled>
                 Takım Seçin...
               </option>
               {teams.map((team) => (

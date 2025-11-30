@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import CreateTeamForm from "@/components/team/CreateTeamForm";
+import CreateTeamForm from "@/components/teams/CreateTeamForm";
 
 export default function CreateTeamPage() {
   return (
