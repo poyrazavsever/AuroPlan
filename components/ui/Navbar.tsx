@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-import { createClient } from "@/utils/supabase/server"; // Server client import edildi
-import UserMenu from "./UserMenu"; // UserMenu import edildi
+import { createClient } from "@/utils/supabase/server";
+import UserMenu from "./UserMenu";
+import NavbarLinks from "./NavbarLinks";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -13,74 +14,61 @@ export default async function Navbar() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-        {/* Logo Alanı */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 overflow-hidden rounded-lg transition-all">
-            <Image
-              src="/Logos/JustLogo.jpg"
-              alt="Aura Plan Logo"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <span className="text-2xl font-bold text-primary tracking-tight">
-            Aura Plan
-          </span>
-        </Link>
+    <header className="fixed top-0 w-full z-50 bg-white border-b border-border h-[80px]">
+      <div className="max-w-7xl mx-auto px-6 h-full flex justify-between items-center">
+        <div className="flex items-center gap-12 h-full">
+          {/* Logo Alanı */}
+          <Link
+            href="/"
+            className="flex items-center gap-3 group relative z-50"
+          >
+            <div className="relative w-9 h-9 overflow-hidden rounded-lg">
+              <Image
+                src="/Logos/JustLogo.jpg"
+                alt="Aura Plan Logo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <span className="text-2xl font-bold text-primary tracking-tight">
+              Aura Plan
+            </span>
+          </Link>
 
-        {/* Menü - Mobil uyumluluk için hidden md:flex kalsın, ileride mobile menu eklenebilir */}
-        <nav className="hidden md:flex gap-8 text-sm font-bold text-muted">
+          {/* Menü - Masaüstü */}
           {user ? (
-            // Giriş yapmış kullanıcı için Navigasyon
-            <>
+            // --- KULLANICI GİRİŞ YAPMIŞSA BASİT MENÜ ---
+            <nav className="hidden md:flex gap-6 text-sm font-bold text-muted h-full items-center">
               <Link
                 href="/dashboard"
-                className="hover:text-primary transition-colors"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
               >
+                <Icon icon="heroicons:squares-2x2" />
                 Panom
               </Link>
               <Link
                 href="/dashboard/tasks"
-                className="hover:text-primary transition-colors"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
               >
+                <Icon icon="heroicons:list-bullet" />
                 Görevler
               </Link>
               <Link
                 href="/dashboard/learn"
-                className="hover:text-primary transition-colors"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
               >
+                <Icon icon="heroicons:academic-cap" />
                 Öğrenme
               </Link>
-            </>
+            </nav>
           ) : (
-            // Ziyaretçi için Navigasyon
-            <>
-              <a
-                href="/#solutions"
-                className="hover:text-primary transition-colors"
-              >
-                Çözümler
-              </a>
-              <a
-                href="/#micro-learning"
-                className="hover:text-primary transition-colors"
-              >
-                Mikro Öğrenme
-              </a>
-              <a
-                href="/#pricing"
-                className="hover:text-primary transition-colors"
-              >
-                Kurumsal
-              </a>
-            </>
+            // --- ZİYARETÇİ İSE MEGA MENU ---
+            <NavbarLinks />
           )}
-        </nav>
+        </div>
 
-        {/* Aksiyon Alanı */}
-        <div className="flex gap-4 items-center">
+        {/* Aksiyon Alanı (Sağ Taraf) */}
+        <div className="flex gap-4 items-center relative z-50">
           {user ? (
             // Kullanıcı varsa UserMenu göster
             <UserMenu user={user} />
