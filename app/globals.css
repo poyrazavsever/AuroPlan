@@ -1,43 +1,39 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- Renk Paleti Tanımları --- */
+  /* --- Renk Paleti (Görselden Esinlenilen) --- */
   
-  /* Ana Marka Renkleri (Kurumsal Mavi - Slate/Blue karışımı) */
-  --color-primary: #0f172a; /* Slate 900 - Ana başlıklar, butonlar */
-  --color-primary-hover: #1e293b; /* Slate 800 */
-  --color-primary-foreground: #ffffff; /* Primary üzerindeki yazı rengi */
+  /* Ana Marka Rengi (Vivid Royal Blue) */
+  --color-primary: #2563EB; /* Blue 600 - Canlı mavi buton ve sol panel için */
+  --color-primary-hover: #1D4ED8; /* Blue 700 - Hover durumu */
+  --color-primary-foreground: #ffffff; 
 
-  /* Aksiyon / Vurgu Renkleri (Güven veren Mavi) */
-  --color-accent: #2563eb; /* Blue 600 - Linkler, aktif durumlar */
-  --color-accent-hover: #1d4ed8; /* Blue 700 */
-  --color-accent-foreground: #ffffff;
-
-  /* Arkaplan Renkleri */
-  --color-background: #ffffff; /* Saf beyaz */
-  --color-surface: #f8fafc; /* Slate 50 - Bölüm arkaplanları */
-  --color-surface-hover: #f1f5f9; /* Slate 100 */
+  /* İkincil / Vurgu */
+  --color-accent: #3B82F6; /* Blue 500 - Daha açık mavi detaylar için */
+  
+  /* Arkaplanlar */
+  --color-background: #ffffff; /* Form tarafı saf beyaz */
+  --color-surface: #f8fafc; /* Slate 50 - Input içleri vb. */
 
   /* Metin Renkleri */
-  --color-foreground: #0f172a; /* Slate 900 - Ana metin */
-  --color-muted: #64748b; /* Slate 500 - Açıklama metinleri */
-  --color-muted-foreground: #94a3b8; /* Slate 400 - Daha silik metinler */
-
-  /* Kenarlıklar */
-  --color-border: #e2e8f0; /* Slate 200 */
+  --color-foreground: #1e293b; /* Slate 800 - Ana metin (Siyah yerine koyu lacivert/gri) */
+  --color-muted: #64748b; /* Slate 500 - Label ve placeholder */
   
-  /* Font Ailesi */
+  /* Kenarlıklar (Gölge yerine border kullanacağız) */
+  --color-border: #e2e8f0; /* Slate 200 - İnce gri çizgiler */
+  
+  /* Font */
   --font-nunito: var(--font-nunito);
-  --font-sans: var(--font-nunito); /* Varsayılan sans fontunu Nunito yap */
+  --font-sans: var(--font-nunito);
 }
 
-/* Genel Stil Ayarları */
 @layer base {
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
   
-  h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-bold;
+  /* Form elemanları için global reset */
+  input:focus {
+    @apply outline-none ring-2 ring-primary/20 border-primary transition-all duration-200;
   }
 }
