@@ -88,9 +88,6 @@ export default async function ProjectsPage({
     <div className="space-y-8">
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-            Proje Alanı
-          </p>
           <h2 className="text-2xl font-bold text-slate-900">{activeTeam.name} projeleri</h2>
           <p className="text-sm text-slate-500 max-w-2xl">
             Yol haritanızı planlayın, kapsamı ve kilometre taşlarını bu alan üzerinden yönetin.
