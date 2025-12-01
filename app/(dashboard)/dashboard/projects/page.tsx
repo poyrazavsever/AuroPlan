@@ -18,7 +18,7 @@ type ProjectRecord = Database["public"]["Tables"]["projects"]["Row"] & {
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams> | SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
   const supabase = await createClient();
   const {
@@ -27,44 +27,80 @@ export default async function ProjectsPage({
 
   if (!user) redirect("/login");
 
+  // 1. Takımları Çek
   const { data: memberships } = await supabase
     .from("team_members")
     .select("team_id, role, teams(id, name, slug)")
     .eq("user_id", user.id)
     .order("joined_at", { ascending: true });
 
-  if (!memberships || memberships.length === 0) {
-    redirect("/dashboard/teams/create");
-  }
-
-  const teams = (memberships ?? [])
+  // 2. Takım Listesini Oluştur
+  const realTeams = (memberships ?? [])
     .map((membership) => ({
       id: membership.teams?.id ?? membership.team_id,
       name: membership.teams?.name ?? "Takım",
       slug: membership.teams?.slug ?? "",
       role: membership.role,
+      type: "team",
     }))
     .filter((team) => !!team.id);
 
-  const resolvedSearchParams =
-    typeof (searchParams as any)?.then === "function"
-      ? await (searchParams as Promise<SearchParams>)
-      : (searchParams as SearchParams);
+  // 3. "Kişisel Projeler" Alanını Listeye Ekle
+  const allWorkspaces = [
+    {
+      id: "personal",
+      name: "Kişisel Projeler",
+      slug: "personal",
+      role: "owner",
+      type: "personal",
+    },
+    ...realTeams,
+  ];
 
+  // 4. Aktif Alanı Belirle
+  const resolvedSearchParams = await searchParams;
   const requestedTeamId = resolvedSearchParams?.teamId;
 
-  const activeTeamId =
-    requestedTeamId && teams.some((team) => team.id === requestedTeamId)
-      ? requestedTeamId
-      : teams[0].id;
+  const activeWorkspace =
+    requestedTeamId && allWorkspaces.some((w) => w.id === requestedTeamId)
+      ? allWorkspaces.find((w) => w.id === requestedTeamId)
+      : allWorkspaces[0]; // Varsayılan olarak ilk sıradaki (Kişisel veya ilk takım)
 
-  const activeTeam = teams.find((team) => team.id === activeTeamId) || teams[0];
+  if (!activeWorkspace) {
+    // Teorik olarak buraya düşmez ama güvenlik için
+    return <div>Yüklüyor...</div>;
+  }
 
-  const { data: projectRows } = await supabase
+  // --- DEBUG LOGLARI ---
+  console.log("------------------------------------------------");
+  console.log("🔍 Projects Page Check");
+  console.log("👤 User:", user.id);
+  console.log("Pf Active Workspace:", activeWorkspace.name, activeWorkspace.id);
+
+  // 5. Projeleri Çek (Dinamik Sorgu)
+  let query = supabase
     .from("projects")
-    .select("*, project_milestones(count), project_members(count)")
-    .eq("team_id", activeTeam.id)
-    .order("created_at", { ascending: false });
+    .select("*, project_milestones(count), project_members(count)");
+
+  if (activeWorkspace.id === "personal") {
+    // Kişisel projeler: team_id NULL olanlar ve sahibi benim olanlar
+    query = query.is("team_id", null).eq("owner_id", user.id);
+  } else {
+    // Takım projeleri: team_id eşleşenler
+    query = query.eq("team_id", activeWorkspace.id);
+  }
+
+  const { data: projectRows, error: projectError } = await query.order(
+    "created_at",
+    { ascending: false }
+  );
+
+  if (projectError) {
+    console.error("❌ Project Error:", projectError);
+  } else {
+    console.log("✅ Found:", projectRows?.length);
+  }
+  console.log("------------------------------------------------");
 
   const projects = (projectRows as ProjectRecord[] | null) ?? [];
 
@@ -75,7 +111,9 @@ export default async function ProjectsPage({
   }));
 
   const totalProjects = normalized.length;
-  const activeProjects = normalized.filter((p) => p.status === "in_progress").length;
+  const activeProjects = normalized.filter(
+    (p) => p.status === "in_progress"
+  ).length;
   const upcomingDeadlines = normalized.filter((project) => {
     if (!project.due_date) return false;
     const due = new Date(project.due_date);
@@ -86,40 +124,67 @@ export default async function ProjectsPage({
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">{activeTeam.name} projeleri</h2>
-          <p className="text-sm text-slate-500 max-w-2xl">
-            Yol haritanızı planlayın, kapsamı ve kilometre taşlarını bu alan üzerinden yönetin.
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+            {activeWorkspace.id === "personal" ? (
+              <>
+                <Icon icon="heroicons:user" /> Bireysel Alan
+              </>
+            ) : (
+              <>
+                <Icon icon="heroicons:users" /> Takım Alanı
+              </>
+            )}
+          </p>
+          <h2 className="text-2xl font-bold text-slate-900 mt-1">
+            {activeWorkspace.name}
+          </h2>
+          <p className="text-sm text-slate-500 max-w-2xl mt-1">
+            {activeWorkspace.id === "personal"
+              ? "Sadece sizin görebileceğiniz bireysel projeleriniz."
+              : "Bu takıma ait projeler ve işbirlikleri."}
           </p>
         </div>
-        <CreateProjectModal teams={teams} activeTeamId={activeTeam.id} />
+
+        {/* Modal'a tüm takımları gönderiyoruz ki seçim yapılabilsin */}
+        <CreateProjectModal
+          teams={realTeams}
+          activeTeamId={
+            activeWorkspace.id === "personal" ? "" : activeWorkspace.id
+          }
+        />
       </header>
 
-      {teams.length > 1 && (
-        <div className="flex flex-wrap gap-2">
-          {teams.map((team) => (
-            <Link
-              key={team.id}
-              href={`/dashboard/projects?teamId=${team.id}`}
-              className={`px-4 py-2 text-sm font-semibold rounded-full border transition-colors ${
-                team.id === activeTeam.id
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-              }`}
-            >
-              {team.name}
-            </Link>
-          ))}
-        </div>
-      )}
+      {/* --- SEKME YAPISI (Workspace Switcher) --- */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-1">
+        {allWorkspaces.map((workspace) => (
+          <Link
+            key={workspace.id}
+            href={`/dashboard/projects?teamId=${workspace.id}`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-all ${
+              workspace.id === activeWorkspace.id
+                ? "border-slate-900 text-slate-900 bg-slate-50"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            {workspace.id === "personal" ? (
+              <Icon icon="heroicons:user" />
+            ) : (
+              <Icon icon="heroicons:users" />
+            )}
+            {workspace.name}
+          </Link>
+        ))}
+      </div>
 
+      {/* İstatistik Kartları */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           icon="heroicons:squares-2x2"
           label="Toplam Proje"
           value={totalProjects}
-          description="Planlanan tüm çalışmalar"
+          description="Bu alandaki tüm projeler"
         />
         <StatCard
           icon="heroicons:bolt"
@@ -133,21 +198,28 @@ export default async function ProjectsPage({
           label="Yaklaşan Teslim"
           value={upcomingDeadlines}
           accent="text-amber-600"
-          description="14 gün içinde teslim"
+          description="14 gün içinde"
         />
       </div>
 
       {normalized.length === 0 ? (
-        <div className="border border-dashed border-slate-300 rounded-2xl p-10 text-center bg-slate-50">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center">
-              <Icon icon="heroicons:sparkles" className="text-xl text-slate-300" />
+        <div className="border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center bg-slate-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+              <Icon
+                icon="heroicons:sparkles"
+                className="text-2xl text-slate-300"
+              />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Henüz proje yok</h3>
-            <p className="text-slate-500 text-sm max-w-md">
-              İlk projenizi oluşturarak takımınızdaki hedefleri tek bir pano üzerinde toplamaya
-              başlayın.
-            </p>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">
+                Henüz proje yok
+              </h3>
+              <p className="text-slate-500 text-sm max-w-md mt-1">
+                "{activeWorkspace.name}" altında henüz bir çalışma
+                başlatmadınız.
+              </p>
+            </div>
           </div>
         </div>
       ) : (

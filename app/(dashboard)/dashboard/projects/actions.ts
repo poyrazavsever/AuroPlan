@@ -26,7 +26,8 @@ export async function createProject(formData: FormData) {
   }
 
   // 2. Form Verilerini Al ve Temizle
-  const teamId = (formData.get("teamId") as string)?.trim();
+  const teamIdStr = (formData.get("teamId") as string)?.trim();
+  const teamId = teamIdStr === "personal" || !teamIdStr ? null : teamIdStr;
   const name = (formData.get("name") as string)?.trim();
   const status = (formData.get("status") as string) || "planning";
   const priority = (formData.get("priority") as string) || "medium";
@@ -37,8 +38,8 @@ export async function createProject(formData: FormData) {
   const coverImageUrl = (formData.get("coverImageUrl") as string)?.trim();
 
   // 3. Validasyon
-  if (!teamId || !name) {
-    throw new Error("Proje adı ve takım seçimi zorunludur.");
+  if (!name) {
+    throw new Error("Proje adı zorunludur.");
   }
 
   // 4. Benzersiz Slug Oluşturma

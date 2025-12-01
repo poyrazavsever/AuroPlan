@@ -55,9 +55,12 @@ export default function CreateProjectModal({ teams, activeTeamId }: Props) {
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
                   Proje Başlat
                 </p>
-                <h3 className="text-2xl font-bold text-slate-900 mt-1">Yol haritanızı planlayın</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mt-1">
+                  Yol haritanızı planlayın
+                </h3>
                 <p className="text-sm text-slate-500">
-                  Takımınızı hizalayın, teslim tarihlerini belirleyin ve proje ritmini oluşturun.
+                  Takımınızı hizalayın, teslim tarihlerini belirleyin ve proje
+                  ritmini oluşturun.
                 </p>
               </div>
               <button
@@ -68,24 +71,24 @@ export default function CreateProjectModal({ teams, activeTeamId }: Props) {
               </button>
             </div>
 
-            <form
-              ref={formRef}
-              action={handleSubmit}
-              className="p-6 space-y-6"
-            >
+            <form ref={formRef} action={handleSubmit} className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField label="Takım">
                   <select
                     name="teamId"
-                    defaultValue={activeTeamId}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    defaultValue={activeTeamId || "personal"}
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all appearance-none"
                   >
-                    {teams.map((team) => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
+                    <option value="personal">
+                      Kişisel Proje (Takımsız)
+                    </option>
+                    <optgroup label="Takımlarım">
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </FormField>
                 <FormField label="Proje Adı">
