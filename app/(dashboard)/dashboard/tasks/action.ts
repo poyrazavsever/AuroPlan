@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { onTaskComplete } from "../achievements/actions";
 
 // Görev Oluşturma
 export async function createTask(formData: FormData) {
@@ -52,11 +53,35 @@ export async function deleteTask(taskId: string) {
 export async function updateTaskStatus(taskId: string, newStatus: string) {
   const supabase = await createClient();
 
+  // Önce görevin mevcut durumunu ve önceliğini al
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("status, priority")
+    .eq("id", taskId)
+    .single();
+
   const { error } = await supabase
     .from("tasks")
     .update({ status: newStatus })
     .eq("id", taskId);
 
-  if (error) console.error("Update failed:", error);
+  if (error) {
+    console.error("Update failed:", error);
+    return { success: false, awardedAchievements: [] };
+  }
+
+  // Eğer görev "done" durumuna geçtiyse, başarım kontrolü yap
+  let awardedAchievements: unknown[] = [];
+  if (newStatus === "done" && task?.status !== "done") {
+    try {
+      awardedAchievements = await onTaskComplete(task?.priority);
+    } catch (err) {
+      console.error("Achievement check failed:", err);
+    }
+  }
+
   revalidatePath("/dashboard/tasks");
+  revalidatePath("/dashboard/achievements");
+
+  return { success: true, awardedAchievements };
 }

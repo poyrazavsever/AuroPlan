@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 // Tip Tanımları
 type Team = {
@@ -83,6 +83,13 @@ const menuGroups = [
         path: "/dashboard/achievements",
         icon: "heroicons:trophy",
       },
+      {
+        title: "Sıralama",
+        path: "/dashboard/leaderboard",
+        icon: "heroicons:chart-bar",
+        badge: "Yeni",
+        badgeColor: "bg-amber-100 text-amber-700",
+      },
     ],
   },
 ];
@@ -102,15 +109,25 @@ const bottomItems = [
 
 export default function Sidebar({ teams, userEmail }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isTeamMenuOpen, setIsTeamMenuOpen] = useState(false);
 
-  // Şimdilik ilk takımı veya varsayılanı seçili gibi gösterelim
-  // İleride bunu URL'den veya Context'ten alacağız
-  const activeTeam = teams[0] || {
-    name: "Kişisel Alan",
-    id: "personal",
-    slug: "personal",
-  };
+  // URL'den teamId'yi al, yoksa ilk takımı kullan
+  const activeTeamId = searchParams.get("teamId");
+
+  const activeTeam = useMemo(() => {
+    if (activeTeamId) {
+      const found = teams.find((t) => t.id === activeTeamId);
+      if (found) return found;
+    }
+    return (
+      teams[0] || {
+        name: "Kişisel Alan",
+        id: "personal",
+        slug: "personal",
+      }
+    );
+  }, [activeTeamId, teams]);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 z-40 hidden md:flex flex-col">
@@ -143,8 +160,10 @@ export default function Sidebar({ teams, userEmail }: SidebarProps) {
               Takımlarım
             </div>
             {teams.map((team) => (
-              <button
+              <Link
                 key={team.id}
+                href={`/dashboard/team?teamId=${team.id}`}
+                onClick={() => setIsTeamMenuOpen(false)}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors text-left"
               >
                 <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
@@ -154,7 +173,7 @@ export default function Sidebar({ teams, userEmail }: SidebarProps) {
                 {team.id === activeTeam.id && (
                   <Icon icon="heroicons:check" className="text-blue-600" />
                 )}
-              </button>
+              </Link>
             ))}
             <div className="h-px bg-slate-100 my-1"></div>
             <Link

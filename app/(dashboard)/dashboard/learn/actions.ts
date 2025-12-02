@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { onLearningComplete } from "../achievements/actions";
 
 export async function completeLearning(learningId: string, xpPoints: number) {
   const supabase = await createClient();
@@ -10,7 +11,7 @@ export async function completeLearning(learningId: string, xpPoints: number) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { success: false, awardedAchievements: [] };
 
   // 1. İlerlemeyi Kaydet (User Progress)
   const { error: progressError } = await supabase.from("user_progress").insert({
@@ -21,7 +22,7 @@ export async function completeLearning(learningId: string, xpPoints: number) {
 
   if (progressError) {
     console.error("Progress error:", progressError);
-    return;
+    return { success: false, awardedAchievements: [] };
   }
 
   // 2. Kullanıcının Toplam Puanını (XP) Artır (RPC veya direct update)
@@ -38,6 +39,17 @@ export async function completeLearning(learningId: string, xpPoints: number) {
 
   await supabase.from("profiles").update({ total_xp: newXp }).eq("id", user.id);
 
+  // 3. Başarım kontrolü
+  let awardedAchievements: unknown[] = [];
+  try {
+    awardedAchievements = await onLearningComplete(learningId);
+  } catch (err) {
+    console.error("Achievement check failed:", err);
+  }
+
   revalidatePath("/dashboard/learn");
+  revalidatePath("/dashboard/achievements");
   revalidatePath("/dashboard"); // Sidebar veya Header'da XP gösteriyorsak orayı da günceller
+
+  return { success: true, awardedAchievements };
 }

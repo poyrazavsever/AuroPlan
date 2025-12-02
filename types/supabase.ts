@@ -17,6 +17,10 @@ export interface Database {
           avatar_url: string | null;
           total_xp: number | null;
           level: number | null;
+          weekly_xp: number | null;
+          monthly_xp: number | null;
+          last_xp_reset_week: string | null;
+          last_xp_reset_month: string | null;
           created_at: string;
         };
         Insert: {
@@ -26,6 +30,10 @@ export interface Database {
           avatar_url?: string | null;
           total_xp?: number | null;
           level?: number | null;
+          weekly_xp?: number | null;
+          monthly_xp?: number | null;
+          last_xp_reset_week?: string | null;
+          last_xp_reset_month?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
@@ -146,7 +154,12 @@ export interface Database {
           slug: string;
           description: string | null;
           objective: string | null;
-          status: "planning" | "in_progress" | "on_hold" | "completed" | "cancelled";
+          status:
+            | "planning"
+            | "in_progress"
+            | "on_hold"
+            | "completed"
+            | "cancelled";
           priority: "low" | "medium" | "high" | "critical";
           start_date: string | null;
           due_date: string | null;
@@ -218,7 +231,9 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["project_milestones"]["Row"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["project_milestones"]["Row"]
+        >;
       };
       project_updates: {
         Row: {
@@ -268,8 +283,106 @@ export interface Database {
           description?: string | null;
           created_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["project_documents"]["Row"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["project_documents"]["Row"]
+        >;
+      };
+      achievements: {
+        Row: {
+          id: string;
+          scope: "global" | "team" | "project";
+          team_id: string | null;
+          project_id: string | null;
+          title: string;
+          description: string;
+          icon: string;
+          badge_color: string;
+          xp_reward: number;
+          category:
+            | "onboarding"
+            | "tasks"
+            | "projects"
+            | "learning"
+            | "collaboration"
+            | "streak"
+            | "level"
+            | "general";
+          trigger_type:
+            | "manual"
+            | "task_complete"
+            | "project_complete"
+            | "learning_complete"
+            | "xp_threshold"
+            | "level_threshold"
+            | "streak"
+            | "count_based";
+          trigger_value: number;
+          trigger_conditions: Json | null;
+          order_index: number;
+          is_active: boolean;
+          is_hidden: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          scope?: "global" | "team" | "project";
+          team_id?: string | null;
+          project_id?: string | null;
+          title: string;
+          description: string;
+          icon?: string;
+          badge_color?: string;
+          xp_reward?: number;
+          category?: Database["public"]["Tables"]["achievements"]["Row"]["category"];
+          trigger_type?: Database["public"]["Tables"]["achievements"]["Row"]["trigger_type"];
+          trigger_value?: number;
+          trigger_conditions?: Json | null;
+          order_index?: number;
+          is_active?: boolean;
+          is_hidden?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["achievements"]["Row"]>;
+      };
+      user_achievements: {
+        Row: {
+          id: number;
+          user_id: string;
+          achievement_id: string;
+          earned_at: string;
+          xp_awarded: number;
+          progress: number;
+          progress_max: number;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          achievement_id: string;
+          earned_at?: string;
+          xp_awarded?: number;
+          progress?: number;
+          progress_max?: number;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["user_achievements"]["Row"]
+        >;
       };
     };
   };
 }
+
+// Helper types for achievements
+export type Achievement = Database["public"]["Tables"]["achievements"]["Row"];
+export type UserAchievement =
+  Database["public"]["Tables"]["user_achievements"]["Row"];
+
+export type AchievementWithProgress = Achievement & {
+  user_progress?: {
+    progress: number;
+    progress_max: number;
+    earned_at: string | null;
+    xp_awarded: number;
+  } | null;
+};

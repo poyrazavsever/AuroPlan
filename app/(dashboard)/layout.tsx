@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Header from "@/components/dashboard/Header";
+import { Suspense } from "react";
 
 export default async function DashboardLayout({
   children,
@@ -37,7 +38,13 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar'a takımları gönderiyoruz */}
-      <Sidebar teams={userTeams} userEmail={user.email} />
+      <Suspense
+        fallback={
+          <div className="hidden md:block w-64 bg-white border-r border-slate-200" />
+        }
+      >
+        <Sidebar teams={userTeams} userEmail={user.email} />
+      </Suspense>
 
       <div className="flex-1 flex flex-col md:pl-64 transition-all duration-300">
         {/* Header'a userProfile bilgisini gönderiyoruz */}
