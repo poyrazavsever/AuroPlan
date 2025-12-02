@@ -31,8 +31,12 @@ export default async function CalendarPage({
 
   return (
     <div className="h-[calc(100vh-100px)]">
-      {/* Tüm mantığı Container yönetiyor */}
-      <CalendarContainer items={items} teams={myTeams} teamId={teamId} />
+      <CalendarContainer
+        items={items}
+        teams={myTeams}
+        teamId={teamId}
+        currentUserId={user.id} // <--- BU EKLENDİ
+      />
     </div>
   );
 }

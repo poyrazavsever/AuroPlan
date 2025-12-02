@@ -6,13 +6,14 @@ export interface CalendarItem {
   startDate: Date;
   endDate: Date;
   type: CalendarEventType;
-  status?: string; // 'todo', 'in_progress', 'done', 'meeting' vb.
-  priority?: string; // 'high', 'medium', 'low'
+  status?: string;
+  priority?: string;
   isAllDay?: boolean;
   metadata?: {
     description?: string | null;
     teamId?: string | null;
     projectId?: string;
+    creatorId?: string; // <--- YENİ: Yetki kontrolü için
     ownerAvatar?: string | null;
   };
 }
