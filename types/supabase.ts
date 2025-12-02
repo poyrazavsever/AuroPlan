@@ -408,6 +408,53 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["reports"]["Row"]>;
       };
+      user_settings: {
+        Row: {
+          id: string;
+          user_id: string;
+          email_notifications: boolean;
+          push_notifications: boolean;
+          task_reminders: boolean;
+          achievement_notifications: boolean;
+          team_updates: boolean;
+          weekly_digest: boolean;
+          streak_reminders: boolean;
+          theme: "light" | "dark" | "system";
+          language: string;
+          date_format: string;
+          time_format: "12h" | "24h";
+          profile_visibility: "public" | "team" | "private";
+          show_activity: boolean;
+          show_achievements: boolean;
+          show_xp: boolean;
+          show_leaderboard_rank: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          email_notifications?: boolean;
+          push_notifications?: boolean;
+          task_reminders?: boolean;
+          achievement_notifications?: boolean;
+          team_updates?: boolean;
+          weekly_digest?: boolean;
+          streak_reminders?: boolean;
+          theme?: "light" | "dark" | "system";
+          language?: string;
+          date_format?: string;
+          time_format?: "12h" | "24h";
+          profile_visibility?: "public" | "team" | "private";
+          show_activity?: boolean;
+          show_achievements?: boolean;
+          show_xp?: boolean;
+          show_leaderboard_rank?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
+      };
     };
   };
 }
@@ -437,3 +484,10 @@ export type ReportWithUploader = Report & {
     avatar_url: string | null;
   } | null;
 };
+
+// Helper types for user settings
+export type UserSettings = Database["public"]["Tables"]["user_settings"]["Row"];
+export type UserSettingsInsert =
+  Database["public"]["Tables"]["user_settings"]["Insert"];
+export type UserSettingsUpdate =
+  Database["public"]["Tables"]["user_settings"]["Update"];
