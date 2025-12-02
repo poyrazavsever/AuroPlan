@@ -12,6 +12,8 @@ import NewUpdateModal from "@/components/projects/NewUpdateModal";
 import UploadDocumentModal from "@/components/projects/UploadDocumentModal";
 import DocumentsList from "@/components/projects/DocumentsList";
 import AddMemberModal from "@/components/projects/AddMemberModal";
+import ProjectAchievementsSection from "@/components/projects/ProjectAchievementsSection";
+import { getProjectAchievements } from "@/app/(dashboard)/dashboard/achievements/actions";
 
 export default async function ProjectDetailPage({
   params,
@@ -94,6 +96,11 @@ export default async function ProjectDetailPage({
   );
 
   const members = project.project_members;
+
+  // 5. Proje Başarımlarını Getir
+  const { achievements: projectAchievements } = await getProjectAchievements(
+    id
+  );
 
   // İlerleme hesabı
   const completedMilestones = milestones.filter(
@@ -199,6 +206,13 @@ export default async function ProjectDetailPage({
               )}
             </div>
           </div>
+
+          {/* Proje Başarımları */}
+          <ProjectAchievementsSection
+            projectId={project.id}
+            achievements={projectAchievements as any}
+            canManage={canManage}
+          />
 
           {/* Güncellemeler (Feed) */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

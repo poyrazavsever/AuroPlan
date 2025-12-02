@@ -1,8 +1,12 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { deleteTask, updateTaskStatus } from "../../app/(dashboard)/dashboard/tasks/action";
+import {
+  deleteTask,
+  updateTaskStatus,
+} from "../../app/(dashboard)/dashboard/tasks/action";
 import { useState } from "react";
+import { showAchievementToast } from "../achievements/AchievementNotifier";
 
 // Tip tanımlaması (Normalde types klasöründen gelmeli)
 type Task = {
@@ -46,7 +50,23 @@ export default function TaskCard({ task }: { task: Task }) {
       newStatus = "in_progress";
 
     if (newStatus !== task.status) {
-      await updateTaskStatus(task.id, newStatus);
+      const result = await updateTaskStatus(task.id, newStatus);
+
+      // Başarım kazanıldıysa bildirim göster
+      if (
+        result?.awardedAchievements &&
+        result.awardedAchievements.length > 0
+      ) {
+        result.awardedAchievements.forEach(
+          (achievement: unknown, index: number) => {
+            setTimeout(() => {
+              showAchievementToast(
+                achievement as Parameters<typeof showAchievementToast>[0]
+              );
+            }, index * 1000);
+          }
+        );
+      }
     }
     setIsLoading(false);
   };
