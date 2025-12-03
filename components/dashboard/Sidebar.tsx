@@ -51,6 +51,13 @@ const menuGroups = [
         badgeColor: "bg-green-100 text-green-700",
       },
       {
+        title: "Organizasyonlar",
+        path: "/dashboard/organizations",
+        icon: "heroicons:calendar-days",
+        badge: "Yeni",
+        badgeColor: "bg-purple-100 text-purple-700",
+      },
+      {
         title: "Takım Üyeleri",
         path: "/dashboard/team",
         icon: "heroicons:users",

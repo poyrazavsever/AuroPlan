@@ -455,6 +455,157 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
       };
+      organizations: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          type:
+            | "hackathon"
+            | "conference"
+            | "workshop"
+            | "meetup"
+            | "social"
+            | "webinar"
+            | "sprint"
+            | "other";
+          scope: "personal" | "team" | "project";
+          team_id: string | null;
+          project_id: string | null;
+          created_by: string;
+          start_date: string | null;
+          end_date: string | null;
+          timezone: string;
+          location_type: "physical" | "online" | "hybrid";
+          location_name: string | null;
+          location_address: string | null;
+          location_url: string | null;
+          location_coordinates: { lat: number; lng: number } | null;
+          status: "draft" | "planning" | "active" | "completed" | "cancelled";
+          visibility: "private" | "team" | "public";
+          cover_image_url: string | null;
+          logo_url: string | null;
+          color_theme: string;
+          metadata: Json;
+          total_sponsors: number;
+          total_budget: number;
+          total_registrations: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          type:
+            | "hackathon"
+            | "conference"
+            | "workshop"
+            | "meetup"
+            | "social"
+            | "webinar"
+            | "sprint"
+            | "other";
+          scope?: "personal" | "team" | "project";
+          team_id?: string | null;
+          project_id?: string | null;
+          created_by: string;
+          start_date?: string | null;
+          end_date?: string | null;
+          timezone?: string;
+          location_type?: "physical" | "online" | "hybrid";
+          location_name?: string | null;
+          location_address?: string | null;
+          location_url?: string | null;
+          location_coordinates?: { lat: number; lng: number } | null;
+          status?: "draft" | "planning" | "active" | "completed" | "cancelled";
+          visibility?: "private" | "team" | "public";
+          cover_image_url?: string | null;
+          logo_url?: string | null;
+          color_theme?: string;
+          metadata?: Json;
+          total_sponsors?: number;
+          total_budget?: number;
+          total_registrations?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["organizations"]["Row"]>;
+      };
+      organization_members: {
+        Row: {
+          id: string;
+          organization_id: string;
+          user_id: string;
+          role: "owner" | "organizer" | "coordinator" | "volunteer" | "member";
+          department:
+            | "sponsorship"
+            | "logistics"
+            | "content"
+            | "technical"
+            | "marketing"
+            | "finance"
+            | null;
+          permissions: Json;
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          user_id: string;
+          role?: "owner" | "organizer" | "coordinator" | "volunteer" | "member";
+          department?:
+            | "sponsorship"
+            | "logistics"
+            | "content"
+            | "technical"
+            | "marketing"
+            | "finance"
+            | null;
+          permissions?: Json;
+          joined_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["organization_members"]["Row"]
+        >;
+      };
+      organization_milestones: {
+        Row: {
+          id: string;
+          organization_id: string;
+          title: string;
+          description: string | null;
+          due_date: string | null;
+          status: "pending" | "in_progress" | "completed" | "cancelled";
+          order_index: number;
+          progress: number;
+          color: string | null;
+          icon: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          title: string;
+          description?: string | null;
+          due_date?: string | null;
+          status?: "pending" | "in_progress" | "completed" | "cancelled";
+          order_index?: number;
+          progress?: number;
+          color?: string | null;
+          icon?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["organization_milestones"]["Row"]
+        >;
+      };
     };
   };
 }
@@ -491,3 +642,44 @@ export type UserSettingsInsert =
   Database["public"]["Tables"]["user_settings"]["Insert"];
 export type UserSettingsUpdate =
   Database["public"]["Tables"]["user_settings"]["Update"];
+
+// Helper types for organizations
+export type Organization = Database["public"]["Tables"]["organizations"]["Row"];
+export type OrganizationInsert =
+  Database["public"]["Tables"]["organizations"]["Insert"];
+export type OrganizationUpdate =
+  Database["public"]["Tables"]["organizations"]["Update"];
+
+export type OrganizationMember =
+  Database["public"]["Tables"]["organization_members"]["Row"];
+export type OrganizationMemberInsert =
+  Database["public"]["Tables"]["organization_members"]["Insert"];
+
+export type OrganizationMilestone =
+  Database["public"]["Tables"]["organization_milestones"]["Row"];
+export type OrganizationMilestoneInsert =
+  Database["public"]["Tables"]["organization_milestones"]["Insert"];
+
+// Extended types with relations
+export type OrganizationWithRelations = Organization & {
+  teams?: { name: string; slug: string } | null;
+  projects?: { name: string; slug: string } | null;
+  organization_members?: (OrganizationMember & {
+    profiles?: {
+      id: string;
+      full_name: string | null;
+      email: string;
+      avatar_url: string | null;
+    } | null;
+  })[];
+  organization_milestones?: OrganizationMilestone[];
+};
+
+export type OrganizationMemberWithProfile = OrganizationMember & {
+  profiles?: {
+    id: string;
+    full_name: string | null;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+};
