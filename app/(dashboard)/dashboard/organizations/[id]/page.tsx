@@ -242,23 +242,41 @@ export default async function OrganizationDetailPage({
             </div>
           </div>
 
-          {/* Hızlı Aksiyonlar (Faz 2+ için placeholder) */}
+          {/* Hızlı Aksiyonlar */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <h3 className="font-bold text-slate-900 flex items-center gap-2 text-sm uppercase tracking-wider mb-4">
               <Icon icon="heroicons:bolt" className="text-amber-500" />
               Hızlı Erişim
             </h3>
             <div className="space-y-2">
-              <button
-                disabled
-                className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-400 bg-slate-50 rounded-xl cursor-not-allowed"
+              <Link
+                href={`/dashboard/organizations/${organization.id}/tasks`}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
               >
-                <Icon icon="heroicons:building-office" />
-                <span className="text-sm">Sponsorlar</span>
-                <span className="ml-auto text-xs bg-slate-200 px-2 py-0.5 rounded">
-                  Yakında
-                </span>
-              </button>
+                <Icon
+                  icon="heroicons:clipboard-document-list"
+                  className="text-green-500"
+                />
+                <span className="text-sm font-medium">Görevler</span>
+                <Icon
+                  icon="heroicons:chevron-right"
+                  className="ml-auto text-slate-400"
+                />
+              </Link>
+              <Link
+                href={`/dashboard/organizations/${organization.id}/sponsors`}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
+              >
+                <Icon
+                  icon="heroicons:building-office"
+                  className="text-blue-500"
+                />
+                <span className="text-sm font-medium">Sponsorlar</span>
+                <Icon
+                  icon="heroicons:chevron-right"
+                  className="ml-auto text-slate-400"
+                />
+              </Link>
               <button
                 disabled
                 className="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-400 bg-slate-50 rounded-xl cursor-not-allowed"

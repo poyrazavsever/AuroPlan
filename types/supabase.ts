@@ -78,11 +78,21 @@ export interface Database {
         Row: {
           id: string;
           team_id: string | null;
+          organization_id: string | null;
           created_at: string;
           title: string;
           description: string | null;
           status: "todo" | "in_progress" | "done";
           priority: "low" | "medium" | "high" | "critical";
+          category:
+            | "logistics"
+            | "communication"
+            | "technical"
+            | "content"
+            | "finance"
+            | "marketing"
+            | "other"
+            | null;
           created_by: string;
           assigned_to: string | null;
           due_date: string | null;
@@ -90,16 +100,71 @@ export interface Database {
         Insert: {
           id?: string;
           team_id?: string | null;
+          organization_id?: string | null;
           created_at?: string;
           title: string;
           description?: string | null;
           status?: "todo" | "in_progress" | "done";
           priority?: "low" | "medium" | "high" | "critical";
+          category?:
+            | "logistics"
+            | "communication"
+            | "technical"
+            | "content"
+            | "finance"
+            | "marketing"
+            | "other"
+            | null;
           created_by: string;
           assigned_to?: string | null;
           due_date?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["tasks"]["Row"]>;
+      };
+      task_templates: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          organization_type:
+            | "hackathon"
+            | "conference"
+            | "workshop"
+            | "meetup"
+            | "social"
+            | "webinar"
+            | "sprint"
+            | "other"
+            | null;
+          tasks: Json;
+          is_public: boolean;
+          use_count: number;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          organization_type?:
+            | "hackathon"
+            | "conference"
+            | "workshop"
+            | "meetup"
+            | "social"
+            | "webinar"
+            | "sprint"
+            | "other"
+            | null;
+          tasks?: Json;
+          is_public?: boolean;
+          use_count?: number;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["task_templates"]["Row"]>;
       };
       micro_learnings: {
         Row: {
@@ -606,6 +671,163 @@ export interface Database {
           Database["public"]["Tables"]["organization_milestones"]["Row"]
         >;
       };
+      sponsor_packages: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          tier:
+            | "platinum"
+            | "gold"
+            | "silver"
+            | "bronze"
+            | "in_kind"
+            | "media"
+            | "other";
+          description: string | null;
+          amount: number;
+          currency: string;
+          benefits: Json;
+          max_sponsors: number | null;
+          current_sponsors: number;
+          color: string | null;
+          icon: string | null;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          tier?:
+            | "platinum"
+            | "gold"
+            | "silver"
+            | "bronze"
+            | "in_kind"
+            | "media"
+            | "other";
+          description?: string | null;
+          amount: number;
+          currency?: string;
+          benefits?: Json;
+          max_sponsors?: number | null;
+          current_sponsors?: number;
+          color?: string | null;
+          icon?: string | null;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["sponsor_packages"]["Row"]
+        >;
+      };
+      organization_sponsors: {
+        Row: {
+          id: string;
+          organization_id: string;
+          company_name: string;
+          company_logo_url: string | null;
+          company_website: string | null;
+          company_description: string | null;
+          industry: string | null;
+          company_size: "startup" | "small" | "medium" | "enterprise" | null;
+          contact_name: string | null;
+          contact_title: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
+          contact_linkedin: string | null;
+          package_id: string | null;
+          custom_amount: number | null;
+          currency: string;
+          status:
+            | "potential"
+            | "contacted"
+            | "negotiating"
+            | "proposal_sent"
+            | "approved"
+            | "rejected"
+            | "cancelled";
+          priority: "low" | "medium" | "high";
+          notes: string | null;
+          tags: Json;
+          assigned_to: string | null;
+          next_followup_date: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          company_name: string;
+          company_logo_url?: string | null;
+          company_website?: string | null;
+          company_description?: string | null;
+          industry?: string | null;
+          company_size?: "startup" | "small" | "medium" | "enterprise" | null;
+          contact_name?: string | null;
+          contact_title?: string | null;
+          contact_email?: string | null;
+          contact_phone?: string | null;
+          contact_linkedin?: string | null;
+          package_id?: string | null;
+          custom_amount?: number | null;
+          currency?: string;
+          status?:
+            | "potential"
+            | "contacted"
+            | "negotiating"
+            | "proposal_sent"
+            | "approved"
+            | "rejected"
+            | "cancelled";
+          priority?: "low" | "medium" | "high";
+          notes?: string | null;
+          tags?: Json;
+          assigned_to?: string | null;
+          next_followup_date?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["organization_sponsors"]["Row"]
+        >;
+      };
+      sponsor_contacts: {
+        Row: {
+          id: string;
+          sponsor_id: string;
+          contact_type: "email" | "call" | "meeting" | "message" | "other";
+          subject: string | null;
+          content: string | null;
+          outcome: "positive" | "neutral" | "negative" | "pending" | null;
+          meeting_date: string | null;
+          meeting_location: string | null;
+          attendees: Json;
+          attachments: Json;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          sponsor_id: string;
+          contact_type: "email" | "call" | "meeting" | "message" | "other";
+          subject?: string | null;
+          content?: string | null;
+          outcome?: "positive" | "neutral" | "negative" | "pending" | null;
+          meeting_date?: string | null;
+          meeting_location?: string | null;
+          attendees?: Json;
+          attachments?: Json;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["sponsor_contacts"]["Row"]
+        >;
+      };
     };
   };
 }
@@ -682,4 +904,90 @@ export type OrganizationMemberWithProfile = OrganizationMember & {
     email: string;
     avatar_url: string | null;
   } | null;
+};
+
+// Helper types for sponsors
+export type SponsorPackage =
+  Database["public"]["Tables"]["sponsor_packages"]["Row"];
+export type SponsorPackageInsert =
+  Database["public"]["Tables"]["sponsor_packages"]["Insert"];
+export type SponsorPackageUpdate =
+  Database["public"]["Tables"]["sponsor_packages"]["Update"];
+
+export type OrganizationSponsor =
+  Database["public"]["Tables"]["organization_sponsors"]["Row"];
+export type OrganizationSponsorInsert =
+  Database["public"]["Tables"]["organization_sponsors"]["Insert"];
+export type OrganizationSponsorUpdate =
+  Database["public"]["Tables"]["organization_sponsors"]["Update"];
+
+export type SponsorContact =
+  Database["public"]["Tables"]["sponsor_contacts"]["Row"];
+export type SponsorContactInsert =
+  Database["public"]["Tables"]["sponsor_contacts"]["Insert"];
+
+// Extended sponsor types with relations
+export type SponsorWithPackage = OrganizationSponsor & {
+  sponsor_packages?: SponsorPackage | null;
+  profiles?: {
+    id: string;
+    full_name: string | null;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+};
+
+export type SponsorContactWithUser = SponsorContact & {
+  profiles?: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+};
+
+// Helper types for tasks
+export type Task = Database["public"]["Tables"]["tasks"]["Row"];
+export type TaskInsert = Database["public"]["Tables"]["tasks"]["Insert"];
+export type TaskUpdate = Database["public"]["Tables"]["tasks"]["Update"];
+
+export type TaskCategory =
+  | "logistics"
+  | "communication"
+  | "technical"
+  | "content"
+  | "finance"
+  | "marketing"
+  | "other";
+
+export type TaskWithAssignee = Task & {
+  profiles?: {
+    id: string;
+    full_name: string | null;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+  organizations?: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+// Helper types for task templates
+export type TaskTemplate =
+  Database["public"]["Tables"]["task_templates"]["Row"];
+export type TaskTemplateInsert =
+  Database["public"]["Tables"]["task_templates"]["Insert"];
+export type TaskTemplateUpdate =
+  Database["public"]["Tables"]["task_templates"]["Update"];
+
+export type TaskTemplateTask = {
+  title: string;
+  description: string;
+  category: TaskCategory;
+  relative_days: number;
+  priority: "low" | "medium" | "high" | "critical";
+};
+
+export type TaskTemplateWithTasks = Omit<TaskTemplate, "tasks"> & {
+  tasks: TaskTemplateTask[];
 };
